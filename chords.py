@@ -1,7 +1,12 @@
 import random
 import sys
 
+RANDOM_VOICING=True
+# To indicate which notes to use
+# Defaults to sharps
+FLAT=False
 notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+notes_flat=['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
 
 scales = {
         'major' :           [0, 2, 4, 5, 7, 9, 11],
@@ -20,7 +25,7 @@ scales = {
 root = sys.argv[1] #note string
 root_i = notes.index(root)
 
-scale_name = sys.argv[2] #string
+scale = sys.argv[2] #string
 scale_notes = scales[scale]
 
 progression_length = int(sys.argv[3])
@@ -103,15 +108,55 @@ chords_semitones = {
         'min_add11'     : [0, 3, 7, 10, 14, 17]
     }
 
+def check_flat():
+    # returns True, if the default scale with sharps has doubled note names like G and G#
+    # this will only work for true diatonic scales as long as no double flats an sharps become involved
+    # F# major and Gb major will break the system
+    global scale_notes, notes, root_i 
+    for i in range(len(scale_notes)):
+        for j in range(i+1, len(scale_notes)):
+            # print "i, j, notes ", i, j, notes[(root_i + scale_notes[i])%12][0], notes[(root_i + scale_notes[j])%12][0]
+            if notes[(root_i + scale_notes[i])%12][0]==notes[(root_i + scale_notes[j])%12][0]:
+                return True
+
+    return False
+    
+
+def print_scale():
+    global scale_notes, notes, scale, root_i, notes_flat, FLAT
+    ret_string=""
+    for i in scale_notes:
+        if FLAT:
+            ret_string+=notes_flat[(root_i + i)%12] + " - "
+        else:
+            ret_string+=notes[(root_i + i)%12] + " - "
+    print ret_string
+
+
+
 def seminote_to_string(seminote):
     global scale_notes, notes
     last_note = notes[seminote]
     for n in scale_notes[1:]:
         if notes[n][0] == last_note: #if consecutive note names are equal, somethings wrong
+            pass
 
 def numeral_to_chord(n):
-    global root_i, scale_notes
-    return notes[(root_i+scale_notes[n-1])%12] + '-' + notes[(root_i+scale_notes[(n+1)%7])%12] + '-' + notes[(root_i+scale_notes[(n+3)%7])%12]
+    global root_i, scale_notes, chords_types, RANDOM_VOICING
+    if RANDOM_VOICING:
+        names, chord_notes = random.choice(chord_types.items())
+        # keeping the format
+        # this is ugly to read, but works
+        #                 <-----------note index------------------------------>
+        #                                     <---scale index------------>
+        custom_chord=notes[(root_i+scale_notes[(n - 1 + chord_notes[0])%7])%12] + '-'
+        for i in chord_notes[1:-1]:
+            custom_chord+= notes[(root_i+scale_notes[ (n -1 +i)%7 ])%12] + '-'
+
+        custom_chord += notes[(root_i + scale_notes[(n -1 + chord_notes[-1])%7])%12]
+        return custom_chord
+    else:
+        return notes[(root_i+scale_notes[n-1])%12] + '-' + notes[(root_i+scale_notes[(n+1)%7])%12] + '-' + notes[(root_i+scale_notes[(n+3)%7])%12]
 
 def create_progression(length,starting_chord):
     global scale
@@ -119,16 +164,19 @@ def create_progression(length,starting_chord):
     progression.append(starting_chord) 
     act_chord = starting_chord
     for i in range(length-1):
-        new_chord = random.choice(transitions[global_scale][act_chord])
+        new_chord = random.choice(transitions[scale][act_chord])
         progression.append(new_chord)
         act_chord=new_chord
     return progression
 
+print "check_flat ", check_flat()
+FLAT=check_flat()
+print_scale()
 
 progression = create_progression(progression_length, starting_chord)
 
 chord_string = ""
 for c in progression:
-    chord_string += number_to_chord(c) + " "
+    chord_string += numeral_to_chord(c) + " "
 
 print chord_string

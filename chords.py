@@ -36,16 +36,16 @@ else:
     starting_chord = 1
 
 #Respect enharmonic shit
-notes_corrected = []
-notes_corrected.append(notes[root_i])
-for n in range(6):
-    step = scale_notes[n+1]-scale_notes[n]
-    note = notes[(root_i+scale_notes[n])%12]
-    note_next = notes[(root_i+scale_notes[n+1])%12]
-    if note[0] == note_next[0]: #if first character of consecutive note names are equal, use flat next
-        notes_corrected.append(notes[(root_i+scale_notes[n+2])%12] + 'b')
-    else:
-        notes_corrected.append(note_next)
+#notes_corrected = []
+#notes_corrected.append(notes[root_i])
+#for n in range(6):
+#    step = scale_notes[n+1]-scale_notes[n]
+#    note = notes[(root_i+scale_notes[n])%12]
+#    note_next = notes[(root_i+scale_notes[n+1])%12]
+#    if note[0] == note_next[0]: #if first character of consecutive note names are equal, use flat next
+#        notes_corrected.append(notes[(root_i+scale_notes[n+2])%12] + 'b')
+#    else:
+#        notes_corrected.append(note_next)
     
     
 transitions = {
@@ -122,15 +122,15 @@ def check_flat():
     return False
     
 
-def print_scale():
+def corrected_scale():
     global scale_notes, notes, scale, root_i, notes_flat, FLAT
-    ret_string=""
+    correct_scale = []
     for i in scale_notes:
         if FLAT:
-            ret_string+=notes_flat[(root_i + i)%12] + " - "
+            correct_scale.append(notes_flat[(root_i + i)%12])
         else:
-            ret_string+=notes[(root_i + i)%12] + " - "
-    print ret_string
+            correct_scale.append(notes[(root_i + i)%12])
+    return correct_scale
 
 
 
@@ -142,19 +142,20 @@ def seminote_to_string(seminote):
             pass
 
 def numeral_to_chord(n):
-    global root_i, scale_notes, chords_types, RANDOM_VOICING
+    global root_i, scale_notes, chords_types, RANDOM_VOICING, notes
     if RANDOM_VOICING:
-        names, chord_notes = random.choice(chord_types.items())
-        # keeping the format
-        # this is ugly to read, but works
-        #                 <-----------note index------------------------------>
-        #                                     <---scale index------------>
-        custom_chord=notes[(root_i+scale_notes[(n - 1 + chord_notes[0])%7])%12] + '-'
-        for i in chord_notes[1:-1]:
-            custom_chord+= notes[(root_i+scale_notes[ (n -1 +i)%7 ])%12] + '-'
-
-        custom_chord += notes[(root_i + scale_notes[(n -1 + chord_notes[-1])%7])%12]
-        return custom_chord
+        voice_name, chord_notes = random.choice(chord_types.items())
+        
+        chord_semitones = []
+        chord_note_names = []
+        
+        #cleaned this up a bit
+        for i in chord_notes:
+            s = (root_i+scale_notes[(n - 1 + i)%7])%12
+            chord_semitones.append(s)
+            chord_note_names.append(notes[s])
+            
+        return "-".join(chord_note_names), voice_name, chord_semitones
     else:
         return notes[(root_i+scale_notes[n-1])%12] + '-' + notes[(root_i+scale_notes[(n+1)%7])%12] + '-' + notes[(root_i+scale_notes[(n+3)%7])%12]
 
@@ -169,14 +170,32 @@ def create_progression(length,starting_chord):
         act_chord=new_chord
     return progression
 
-print "check_flat ", check_flat()
+#print "check_flat ", check_flat()
 FLAT=check_flat()
-print_scale()
+
+#Switch note table if FLAT
+if FLAT:
+    notes = notes_flat
+
+#print corrected_scale()
 
 progression = create_progression(progression_length, starting_chord)
 
 chord_string = ""
 for c in progression:
-    chord_string += numeral_to_chord(c) + " "
+    chord_note_names, voicing, chord_semitones = numeral_to_chord(c)
+    chord_root_name = chord_note_names[0]
+    
+    #Check if all chord semitones appear in dict chords_semitones
+    #Otherwise(can this happen?) use voicing in terms of scale degrees
+    voice = voicing
+    for v, st in chords_semitones.iteritems():
+        if len(st) != len(chord_semitones):
+            continue
+        if all(x in st for x in chord_semitones):
+            voice = v
+            break
+    
+    chord_string += chord_note_names + "(" + chord_root_name + " " + voice + ")  "
 
 print chord_string

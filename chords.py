@@ -14,8 +14,6 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-asciipiano = ["║░█░█░║░█░█░█░║░█░█░║","║░█░█░║░█░█░█░║░█░█░║","║░║░║░║░║░║░║░║░║░║░║","╚═╩═╩═╩═╩═╩═╩═╩═╩═╩═╝"]
-
 RANDOM_VOICING=True
 # To indicate which notes to use
 # Defaults to sharps

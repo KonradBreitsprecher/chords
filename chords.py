@@ -4,16 +4,6 @@
 import random
 import sys
 
-class bcolors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
-
 RANDOM_VOICING=True
 # To indicate which notes to use
 # Defaults to sharps
@@ -183,7 +173,16 @@ def create_progression(length,starting_chord):
         act_chord=new_chord
     return progression
 
-
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+        
 def print_chord(chord_semitones):
     s = ""
     st = 0

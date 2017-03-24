@@ -1,5 +1,20 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import random
 import sys
+
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
+asciipiano = ["║░█░█░║░█░█░█░║░█░█░║","║░█░█░║░█░█░█░║░█░█░║","║░║░║░║░║░║░║░║░║░║░║","╚═╩═╩═╩═╩═╩═╩═╩═╩═╩═╝"]
 
 RANDOM_VOICING=True
 # To indicate which notes to use
@@ -155,7 +170,7 @@ def numeral_to_chord(n):
             chord_semitones.append(s)
             chord_note_names.append(notes[s])
             
-        return "-".join(chord_note_names), voice_name, chord_semitones
+        return chord_note_names, voice_name, chord_semitones
     else:
         return notes[(root_i+scale_notes[n-1])%12] + '-' + notes[(root_i+scale_notes[(n+1)%7])%12] + '-' + notes[(root_i+scale_notes[(n+3)%7])%12]
 
@@ -170,6 +185,43 @@ def create_progression(length,starting_chord):
         act_chord=new_chord
     return progression
 
+
+def print_chord(chord_semitones):
+    s = ""
+    st = 0
+    ri = 0
+    colind = []
+    close_col = False
+    for i in range(14*2+1):
+        if (i%14) not in [0,6]:
+            if ri < len(chord_semitones) and st%12==chord_semitones[ri]:
+                s += bcolors.OKGREEN
+                close_col = True
+                colind.append(i)
+                ri += 1
+            st += 1
+        s += '░' if (i%14) in [1,3,5,7,9,11,13] else '█' if (i%14) in [2,4,8,10,12] else '║'
+        if close_col:
+            close_col = False
+            s += bcolors.ENDC
+
+    s = (s+'\n')*2 
+    close_col = False
+    for i in range(14*2+1):
+        if (i%14) in [1,3,5,7,9,11,13] and i in colind: # and ri < len(chord_semitones) and (st%12)==chord_semitones[ri]:
+                s += bcolors.OKGREEN
+                close_col = True
+        s += '░' if (i%14) in [1,3,5,7,9,11,13] else '║'
+        if close_col:
+            close_col = False
+            s += bcolors.ENDC
+
+    s += "\n"+("╚═╩═╩═╩═╩═╩═╩═╩═╩═╩═╩═╩═╩═╩═╝")
+
+    print s
+
+
+
 #print "check_flat ", check_flat()
 FLAT=check_flat()
 
@@ -181,21 +233,13 @@ if FLAT:
 
 progression = create_progression(progression_length, starting_chord)
 
-chord_string = ""
 for c in progression:
     chord_note_names, voicing, chord_semitones = numeral_to_chord(c)
-    chord_root_name = chord_note_names[0]
+    chord_root_note = notes[scales[scale][c-1]]
     
-    #Check if all chord semitones appear in dict chords_semitones
-    #Otherwise(can this happen?) use voicing in terms of scale degrees
-    voice = voicing
-    for v, st in chords_semitones.iteritems():
-        if len(st) != len(chord_semitones):
-            continue
-        if all(x in st for x in chord_semitones):
-            voice = v
-            break
-    
-    chord_string += chord_note_names + "(" + chord_root_name + " " + voice + ")  "
+    print ""
+    print "-".join(chord_note_names) + " (" + chord_root_note + " " + scale + " " + voicing + ")  "
+    print_chord(chord_semitones)
+    print ""
 
-print chord_string
+

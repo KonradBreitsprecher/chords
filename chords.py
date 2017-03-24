@@ -79,8 +79,10 @@ chord_types = {
         'third_inv_seventh' : [6, 7, 2, 4],
         'sus2'              : [0, 1, 4],            #root second fifth
         'sus4'              : [0, 3, 4],
-        'add9'              : [0, 2, 4, 6, 8],      #includes the seven
-        'add11'             : [0, 2, 4, 6, 8, 10]   #includes seven and nine
+        'add9'              : [0, 2, 4, 8],         #only nine
+        'add11'             : [0, 2, 4, 10],        #only eleventh
+        'ninth'             : [0, 2, 4, 6, 8],      #includes the seven and nine
+        'eleventh'          : [0, 2, 4, 6, 8, 10]   #includes seven and nine and eleventh
     }
 
 # therefore having the chords in terms of half steps makes sense to me
@@ -174,16 +176,22 @@ def create_progression(length,starting_chord):
     return progression
 
 class bcolors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
+    Red = '\033[91m'
+    Green = '\033[92m'
+    Blue = '\033[94m'
+    Cyan = '\033[96m'
+    White = '\033[97m'
+    Yellow = '\033[93m'
+    Magenta = '\033[95m'
+    Grey = '\033[90m'
+    Black = '\033[90m'
+    EndCol = '\033[0m'
+    Bold = '\033[1m'
+    Underline = '\033[4m'
         
 def print_chord(chord_semitones):
+    b='█'
+    w='▒'
     s = ""
     st = 0
     ri = 0
@@ -192,26 +200,26 @@ def print_chord(chord_semitones):
     for i in range(14*2+1):
         if (i%14) not in [0,6]:
             if ri < len(chord_semitones) and st%12==chord_semitones[ri]:
-                s += bcolors.OKGREEN
+                s += bcolors.Red
                 close_col = True
                 colind.append(i)
                 ri += 1
             st += 1
-        s += '░' if (i%14) in [1,3,5,7,9,11,13] else '█' if (i%14) in [2,4,8,10,12] else '║'
+        s += w if (i%14) in [1,3,5,7,9,11,13] else b if (i%14) in [2,4,8,10,12] else '║'
         if close_col:
             close_col = False
-            s += bcolors.ENDC
+            s += bcolors.EndCol
 
     s = (s+'\n')*2 
     close_col = False
     for i in range(14*2+1):
         if (i%14) in [1,3,5,7,9,11,13] and i in colind: # and ri < len(chord_semitones) and (st%12)==chord_semitones[ri]:
-                s += bcolors.OKGREEN
+                s += bcolors.Red
                 close_col = True
-        s += '░' if (i%14) in [1,3,5,7,9,11,13] else '║'
+        s += w if (i%14) in [1,3,5,7,9,11,13] else '║'
         if close_col:
             close_col = False
-            s += bcolors.ENDC
+            s += bcolors.EndCol
 
     s += "\n"+("╚═╩═╩═╩═╩═╩═╩═╩═╩═╩═╩═╩═╩═╩═╝")
 
@@ -232,7 +240,7 @@ progression = create_progression(progression_length, starting_chord)
 
 for c in progression:
     chord_note_names, voicing, chord_semitones = numeral_to_chord(c)
-    chord_root_note = notes[scales[scale][c-1]]
+    chord_root_note = notes[(root_i+scales[scale][c-1])%12]
     
     print ""
     print "-".join(chord_note_names) + " (" + chord_root_note + " " + scale + " " + voicing + ")  "

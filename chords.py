@@ -192,7 +192,7 @@ class bcolors:
 def print_chord(chord_semitones):
     b='█'
     w='▒'
-    s = ""
+    s = bcolors.White
     st = 0
     ri = 0
     colind = []
@@ -208,7 +208,7 @@ def print_chord(chord_semitones):
         s += w if (i%14) in [1,3,5,7,9,11,13] else b if (i%14) in [2,4,8,10,12] else '║'
         if close_col:
             close_col = False
-            s += bcolors.EndCol
+            s += bcolors.White
 
     s = (s+'\n')*2 
     close_col = False
@@ -219,7 +219,7 @@ def print_chord(chord_semitones):
         s += w if (i%14) in [1,3,5,7,9,11,13] else '║'
         if close_col:
             close_col = False
-            s += bcolors.EndCol
+            s += bcolors.White
 
     s += "\n"+("╚═╩═╩═╩═╩═╩═╩═╩═╩═╩═╩═╩═╩═╩═╝")
 

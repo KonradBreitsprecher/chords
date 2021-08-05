@@ -25,13 +25,22 @@ scales = {
 #        'minor_pentatonic': ['3', '5', '7', '10', '12']
 }
 
-root = sys.argv[1] #note string
+if len(sys.argv) > 1:
+    root = sys.argv[1]
+else:
+    root = 'C'
 root_i = notes.index(root)
 
-scale = sys.argv[2] #string
+if len(sys.argv) > 2:
+    scale = sys.argv[2]
+else:
+    scale = 'natural_minor'
 scale_notes = scales[scale]
 
-progression_length = int(sys.argv[3])
+if len(sys.argv) > 3:
+    progression_length = int(sys.argv[3])
+else:
+    progression_length = 3
 
 if len(sys.argv) > 4:
     starting_chord = int(sys.argv[4])
@@ -86,7 +95,7 @@ chord_types = {
     }
 
 # therefore having the chords in terms of half steps makes sense to me
-# those can be built indendent of context, having a dominant seventh whenever we want
+# those can be built independent of context, having a dominant seventh whenever we want
 
 chords_semitones = {
         'maj_triad'     : [0, 4, 7], 
@@ -139,17 +148,17 @@ def corrected_scale():
 
 
 
-def seminote_to_string(seminote):
-    global scale_notes, notes
-    last_note = notes[seminote]
-    for n in scale_notes[1:]:
-        if notes[n][0] == last_note: #if consecutive note names are equal, somethings wrong
-            pass
+# def seminote_to_string(seminote):
+#     global scale_notes, notes
+#     last_note = notes[seminote]
+#     for n in scale_notes[1:]:
+#         if notes[n][0] == last_note: #if consecutive note names are equal, somethings wrong
+#             pass
 
 def numeral_to_chord(n):
     global root_i, scale_notes, chords_types, RANDOM_VOICING, notes
     if RANDOM_VOICING:
-        voice_name, chord_notes = random.choice(chord_types.items())
+        voice_name, chord_notes = random.choice(list(chord_types.items()))
         
         chord_semitones = []
         chord_note_names = []
@@ -223,7 +232,7 @@ def print_chord(chord_semitones):
 
     s += "\n"+("╚═╩═╩═╩═╩═╩═╩═╩═╩═╩═╩═╩═╩═╩═╝")
 
-    print s
+    print(s)
 
 
 
@@ -242,9 +251,9 @@ for c in progression:
     chord_note_names, voicing, chord_semitones = numeral_to_chord(c)
     chord_root_note = notes[(root_i+scales[scale][c-1])%12]
     
-    print ""
-    print "-".join(chord_note_names) + " (" + chord_root_note + " " + scale + " " + voicing + ")  "
+    print("")
+    print(chord_root_note + " " + scale + " " + voicing)
     print_chord(chord_semitones)
-    print ""
-
+    print("-".join(chord_note_names))
+    print("")
 

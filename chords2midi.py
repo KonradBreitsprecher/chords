@@ -1,6 +1,6 @@
 from midiutil import MIDIFile
 
-def write_midi_file(progression_semitones):
+def write_midi_file(progression_semitones, filename):
 
     track    = 0
     channel  = 0
@@ -25,5 +25,5 @@ def write_midi_file(progression_semitones):
 
         time = time + 1
 
-    with open("random_progression.mid", "wb") as output_file:
+    with open(filename, "wb") as output_file:
         MyMIDI.writeFile(output_file)

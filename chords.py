@@ -4,6 +4,7 @@
 import random
 import sys
 import chords2midi
+import play_midi
 
 # Args and defaults
 
@@ -401,4 +402,6 @@ for c in progression:
 
     print("")
 
-chords2midi.write_midi_file(progression_semitones)
+filename = "random_progression.mid"
+chords2midi.write_midi_file(progression_semitones, filename)
+play_midi.play(filename)

@@ -4,11 +4,31 @@
 import random
 import sys
 
+if len(sys.argv) > 1:
+    root = sys.argv[1]
+else:
+    root = 'C'
+
+if len(sys.argv) > 2:
+    scale = sys.argv[2]
+else:
+    scale = 'natural_minor'
+
+if len(sys.argv) > 3:
+    progression_length = int(sys.argv[3])
+else:
+    progression_length = 3
+
+if len(sys.argv) > 4:
+    starting_chord = int(sys.argv[4])
+else:
+    starting_chord = 1
+
+
 RANDOM_VOICING=True
-# To indicate which notes to use
-# Defaults to sharps
-FLAT=False
-notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+
+
+notes_sharp = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 notes_flat=['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
 
 scales = {
@@ -24,41 +44,6 @@ scales = {
 #        'major_pentatonic': ['2', '4', '7', '9', '12'],
 #        'minor_pentatonic': ['3', '5', '7', '10', '12']
 }
-
-if len(sys.argv) > 1:
-    root = sys.argv[1]
-else:
-    root = 'C'
-root_i = notes.index(root)
-
-if len(sys.argv) > 2:
-    scale = sys.argv[2]
-else:
-    scale = 'natural_minor'
-scale_notes = scales[scale]
-
-if len(sys.argv) > 3:
-    progression_length = int(sys.argv[3])
-else:
-    progression_length = 3
-
-if len(sys.argv) > 4:
-    starting_chord = int(sys.argv[4])
-else:
-    starting_chord = 1
-
-#Respect enharmonic shit
-#notes_corrected = []
-#notes_corrected.append(notes[root_i])
-#for n in range(6):
-#    step = scale_notes[n+1]-scale_notes[n]
-#    note = notes[(root_i+scale_notes[n])%12]
-#    note_next = notes[(root_i+scale_notes[n+1])%12]
-#    if note[0] == note_next[0]: #if first character of consecutive note names are equal, use flat next
-#        notes_corrected.append(notes[(root_i+scale_notes[n+2])%12] + 'b')
-#    else:
-#        notes_corrected.append(note_next)
-    
     
 transitions = {
         'major' :           { 1: [2,3,4,5,6,7], 2: [5,7], 3: [4,6], 4: [1,5,7], 5: [1], 6: [2,4], 7: [1,5]} , 
@@ -122,28 +107,40 @@ chords_semitones = {
         'min_add11'     : [0, 3, 7, 10, 14, 17]
     }
 
+
+
+#Respect enharmonic shit
+#notes_corrected = []
+#notes_corrected.append(notes[root_i])
+#for n in range(6):
+#    step = scale_notes[n+1]-scale_notes[n]
+#    note = notes[(root_i+scale_notes[n])%12]
+#    note_next = notes[(root_i+scale_notes[n+1])%12]
+#    if note[0] == note_next[0]: #if first character of consecutive note names are equal, use flat next
+#        notes_corrected.append(notes[(root_i+scale_notes[n+2])%12] + 'b')
+#    else:
+#        notes_corrected.append(note_next)
+    
+
 def check_flat():
     # returns True, if the default scale with sharps has doubled note names like G and G#
     # this will only work for true diatonic scales as long as no double flats an sharps become involved
     # F# major and Gb major will break the system
-    global scale_notes, notes, root_i 
+    global scale_notes, notes_sharp, root_i 
     for i in range(len(scale_notes)):
         for j in range(i+1, len(scale_notes)):
             # print "i, j, notes ", i, j, notes[(root_i + scale_notes[i])%12][0], notes[(root_i + scale_notes[j])%12][0]
-            if notes[(root_i + scale_notes[i])%12][0]==notes[(root_i + scale_notes[j])%12][0]:
+            if notes_sharp[(root_i + scale_notes[i])%12][0]==notes_sharp[(root_i + scale_notes[j])%12][0]:
                 return True
 
     return False
     
 
 def corrected_scale():
-    global scale_notes, notes, scale, root_i, notes_flat, FLAT
+    global scale_notes, notes, scale, root_i
     correct_scale = []
     for i in scale_notes:
-        if FLAT:
-            correct_scale.append(notes_flat[(root_i + i)%12])
-        else:
-            correct_scale.append(notes[(root_i + i)%12])
+        correct_scale.append(notes[(root_i + i)%12])
     return correct_scale
 
 
@@ -156,7 +153,7 @@ def corrected_scale():
 #             pass
 
 def numeral_to_chord(n):
-    global root_i, scale_notes, chords_types, RANDOM_VOICING, notes
+    global root_i, scale_notes, RANDOM_VOICING, notes
     if RANDOM_VOICING:
         voice_name, chord_notes = random.choice(list(chord_types.items()))
         
@@ -235,15 +232,115 @@ def print_chord(chord_semitones):
     print(s)
 
 
+def print_chord_tabs(chord_note_names):
 
-#print "check_flat ", check_flat()
-FLAT=check_flat()
+    tab_strings_empty = \
+'''\
+-x--||----|----|----|----|
+-x--||----|----|----|----|
+-x--||----|----|----|----|
+-x--||----|----|----|----|
+-x--||----|----|----|----|
+-x--||----|----|----|----|\
+'''
 
-#Switch note table if FLAT
-if FLAT:
-    notes = notes_flat
+    tab_strings_empty_list = tab_strings_empty.split('\n')
+    tab_strings_empty_list.reverse()
+
+    tab_strings = \
+'''\
+-E-||-F-|-F#-|-G-|-G#-|
+-B-||-C-|-C#-|-D-|-D#-|
+-G-||-G#-|-A-|-A#-|-B-|
+-D-||-D#-|-F-|-F#-|-G-|
+-A-||-A#-|-B-|-C-|-C#-|
+-E-||-F-|-F#-|-G-|-G#-|\
+'''
+
+    tab_strings_list = tab_strings.split('\n')
+    tab_strings_list.reverse()
+
+    tab_notes =[\
+    ['E','F','F#','G','G#'],
+    ['B','C','C#','D','D#'],
+    ['G','G#','A','A#','B'],
+    ['D','D#','F','F#','G'],
+    ['A','A#','B','C','C#'],
+    ['E','F','F#','G','G#']]
+
+    tab_notes.reverse()
+
+    tab_strings_final = ['','','','','','']
+    #tab_strings_filled.extend(tab_strings_list)
+    string_filled = [False,False,False,False,False,False]
+    
+    for chord_note_i, chord_note in enumerate(chord_note_names):
+        found_pos = False
+        for string_i, string in enumerate(tab_strings_list):
+            if not string_filled[string_i]:
+                if chord_note in tab_notes[string_i]:
+                    string_filled[string_i] = True
+                    found_pos = True
+
+                    tab_notes_wo_chord_note = []
+                    tab_notes_wo_chord_note.extend(tab_notes[string_i])
+                    tab_notes_wo_chord_note.remove(chord_note)
+                    cleared_string = string
+                    for note_not_played in tab_notes_wo_chord_note:
+                        cleared_string = cleared_string.replace(note_not_played, '--',1)
+                    if len(chord_note) == 1:
+                        cleared_string = cleared_string.replace(chord_note, chord_note + '-',1)
+                        
+                    tab_strings_final[string_i] = cleared_string
+                    break
+
+        if not found_pos:
+            print("ERROR: Could not place", chord_note)
+
+    # Empty strings
+    for string_i, string in enumerate(tab_strings_final):
+        if string == '':
+            tab_strings_final[string_i] = tab_strings_empty_list[string_i]
+
+
+    # Replace nontes with 'o'
+    for string_i, string in enumerate(tab_strings_final):
+        for note in notes_sharp:
+            if len(note) == 1:
+                string = string.replace(note + '-', 'o-')    
+            else:
+                string = string.replace(note, 'o-')    
+
+        tab_strings_final[string_i] = string
+
+
+    tab_strings_final.reverse()
+    print('\n'.join(tab_strings_final))
+
+
+
+if root in notes_flat:
+    root_i = notes_flat.index(root)
+else:
+    root_i = notes_sharp.index(root)
+
+scale_notes = scales[scale]
+
+# #Switch note table if FLAT
+# use_flat=check_flat()
+# if use_flat:
+#     notes = notes_flat
+# else:
+#     notes = notes_sharp
+
+notes = notes_sharp
+
 
 #print corrected_scale()
+
+# tab_notes = ['E', 'A', 'D', 'G', 'B', 'e']
+# tab_semitones = [4,9,3,7,11,4]
+
 
 progression = create_progression(progression_length, starting_chord)
 
@@ -255,5 +352,12 @@ for c in progression:
     print(chord_root_note + " " + scale + " " + voicing)
     print_chord(chord_semitones)
     print("-".join(chord_note_names))
+    print("")
+
+    print_chord_tabs(chord_note_names)
+
+    print("")
+
+
     print("")
 

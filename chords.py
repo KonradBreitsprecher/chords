@@ -3,6 +3,9 @@
 
 import random
 import sys
+import chords2midi
+
+# Args and defaults
 
 if len(sys.argv) > 1:
     root = sys.argv[1]
@@ -27,6 +30,7 @@ else:
 
 RANDOM_VOICING=True
 
+# Definitions
 
 notes_sharp = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 notes_flat=['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
@@ -46,15 +50,15 @@ scales = {
 }
     
 transitions = {
-        'major' :           { 1: [2,3,4,5,6,7], 2: [5,7], 3: [4,6], 4: [1,5,7], 5: [1], 6: [2,4], 7: [1,5]} , 
-        'natural_minor':    { 1: [2,3,4,5,6,7], 2: [5,7], 3: [4,6], 4: [1,5,7], 5: [1], 6: [2,4], 7: [1,5]} ,
-        'harmonic_minor':   { 1: [2,3,4,5,6,7], 2: [5,7], 3: [4,6], 4: [1,5,7], 5: [1], 6: [2,4], 7: [1,5]} ,
-        'melodic_minor':    { 1: [2,3,4,5,6,7], 2: [5,7], 3: [4,6], 4: [1,5,7], 5: [1], 6: [2,4], 7: [1,5]} ,
-        'dorian':           { 1: [2,3,4,5,6,7], 2: [5,7], 3: [4,6], 4: [1,5,7], 5: [1], 6: [2,4], 7: [1,5]} ,
-        'locrian':          { 1: [2,3,4,5,6,7], 2: [5,7], 3: [4,6], 4: [1,5,7], 5: [1], 6: [2,4], 7: [1,5]} ,
-        'lydian':           { 1: [2,3,4,5,6,7], 2: [5,7], 3: [4,6], 4: [1,5,7], 5: [1], 6: [2,4], 7: [1,5]} ,
-        'mixolydian':       { 1: [2,3,4,5,6,7], 2: [5,7], 3: [4,6], 4: [1,5,7], 5: [1], 6: [2,4], 7: [1,5]} ,
-        'phrygian':         { 1: [2,3,4,5,6,7], 2: [5,7], 3: [4,6], 4: [1,5,7], 5: [1], 6: [2,4], 7: [1,5]} 
+        'major' :           { 1: [2,3,4,5,6,7], 2: [5,7], 3: [4,5,6,7], 4: [1,2,5,7], 5: [1,4,6,7], 6: [2,4,5], 7: [1,5,6]} , 
+        'natural_minor':    { 1: [2,3,4,5,6,7], 2: [5,7], 3: [4,5,6,7], 4: [1,2,5,7], 5: [1,4,6,7], 6: [2,4,5], 7: [1,5,6]} ,
+        'harmonic_minor':   { 1: [2,3,4,5,6,7], 2: [5,7], 3: [4,5,6,7], 4: [1,2,5,7], 5: [1,4,6,7], 6: [2,4,5], 7: [1,5,6]} ,
+        'melodic_minor':    { 1: [2,3,4,5,6,7], 2: [5,7], 3: [4,5,6,7], 4: [1,2,5,7], 5: [1,4,6,7], 6: [2,4,5], 7: [1,5,6]} ,
+        'dorian':           { 1: [2,3,4,5,6,7], 2: [5,7], 3: [4,5,6,7], 4: [1,2,5,7], 5: [1,4,6,7], 6: [2,4,5], 7: [1,5,6]} ,
+        'locrian':          { 1: [2,3,4,5,6,7], 2: [5,7], 3: [4,5,6,7], 4: [1,2,5,7], 5: [1,4,6,7], 6: [2,4,5], 7: [1,5,6]} ,
+        'lydian':           { 1: [2,3,4,5,6,7], 2: [5,7], 3: [4,5,6,7], 4: [1,2,5,7], 5: [1,4,6,7], 6: [2,4,5], 7: [1,5,6]} ,
+        'mixolydian':       { 1: [2,3,4,5,6,7], 2: [5,7], 3: [4,5,6,7], 4: [1,2,5,7], 5: [1,4,6,7], 6: [2,4,5], 7: [1,5,6]} ,
+        'phrygian':         { 1: [2,3,4,5,6,7], 2: [5,7], 3: [4,5,6,7], 4: [1,2,5,7], 5: [1,4,6,7], 6: [2,4,5], 7: [1,5,6]} 
 #       'major_pentatonic': { 1: [2,3,4,5,6,7], 2: [5,7], 3: [4,6], 4: [1,5,7], 5: [1], 6: [2,4], 7: [1,5]} },
 #       'minor_pentatonic': { 1: [2,3,4,5,6,7], 2: [5,7], 3: [4,6], 4: [1,5,7], 5: [1], 6: [2,4], 7: [1,5]} }
 }
@@ -232,7 +236,7 @@ def print_chord(chord_semitones):
     print(s)
 
 
-def print_chord_tabs(chord_note_names):
+def print_chord_tabs(notes, chord_note_names, use_flat):
 
     tab_strings_empty = \
 '''\
@@ -247,7 +251,7 @@ def print_chord_tabs(chord_note_names):
     tab_strings_empty_list = tab_strings_empty.split('\n')
     tab_strings_empty_list.reverse()
 
-    tab_strings = \
+    tab_strings_sharp = \
 '''\
 -E-||-F-|-F#-|-G-|-G#-|
 -B-||-C-|-C#-|-D-|-D#-|
@@ -257,10 +261,25 @@ def print_chord_tabs(chord_note_names):
 -E-||-F-|-F#-|-G-|-G#-|\
 '''
 
+    tab_strings_flat = \
+'''\
+-E-||-F-|-Gb-|-G-|-Ab-|
+-B-||-C-|-Db-|-D-|-Eb-|
+-G-||-Ab-|-A-|-Bb-|-B-|
+-D-||-Eb-|-F-|-Gb-|-G-|
+-A-||-Bb-|-B-|-C-|-Db-|
+-E-||-F-|-Gb-|-G-|-Ab-|\
+'''
+
+    if use_flat:
+        tab_strings = tab_strings_flat
+    else:
+        tab_strings = tab_strings_sharp
+
     tab_strings_list = tab_strings.split('\n')
     tab_strings_list.reverse()
 
-    tab_notes =[\
+    tab_notes_sharp =[\
     ['E','F','F#','G','G#'],
     ['B','C','C#','D','D#'],
     ['G','G#','A','A#','B'],
@@ -268,10 +287,22 @@ def print_chord_tabs(chord_note_names):
     ['A','A#','B','C','C#'],
     ['E','F','F#','G','G#']]
 
+    tab_notes_flat =[\
+    ['E','F','Gb','G','Ab'],
+    ['B','C','Db','D','Eb'],
+    ['G','Ab','A','Bb','B'],
+    ['D','Eb','F','Gb','G'],
+    ['A','Bb','B','C','Db'],
+    ['E','F','Gb','G','Ab']]
+
+    if use_flat:
+        tab_notes = tab_notes_flat
+    else:
+        tab_notes = tab_notes_sharp
+
     tab_notes.reverse()
 
     tab_strings_final = ['','','','','','']
-    #tab_strings_filled.extend(tab_strings_list)
     string_filled = [False,False,False,False,False,False]
     
     for chord_note_i, chord_note in enumerate(chord_note_names):
@@ -287,9 +318,9 @@ def print_chord_tabs(chord_note_names):
                     tab_notes_wo_chord_note.remove(chord_note)
                     cleared_string = string
                     for note_not_played in tab_notes_wo_chord_note:
-                        cleared_string = cleared_string.replace(note_not_played, '--',1)
+                        cleared_string = cleared_string.replace(note_not_played + '-', '---',1)
                     if len(chord_note) == 1:
-                        cleared_string = cleared_string.replace(chord_note, chord_note + '-',1)
+                        cleared_string = cleared_string.replace(chord_note + '-', chord_note + '--',1)
                         
                     tab_strings_final[string_i] = cleared_string
                     break
@@ -305,11 +336,11 @@ def print_chord_tabs(chord_note_names):
 
     # Replace nontes with 'o'
     for string_i, string in enumerate(tab_strings_final):
-        for note in notes_sharp:
+        for note in notes:
             if len(note) == 1:
-                string = string.replace(note + '-', 'o-')    
+                string = string.replace(note + '-', 'o-', 1)    
             else:
-                string = string.replace(note, 'o-')    
+                string = string.replace(note, 'o-', 1)    
 
         tab_strings_final[string_i] = string
 
@@ -326,14 +357,12 @@ else:
 
 scale_notes = scales[scale]
 
-# #Switch note table if FLAT
-# use_flat=check_flat()
-# if use_flat:
-#     notes = notes_flat
-# else:
-#     notes = notes_sharp
-
-notes = notes_sharp
+#Switch note table if FLAT
+use_flat=check_flat()
+if use_flat:
+    notes = notes_flat
+else:
+    notes = notes_sharp
 
 
 #print corrected_scale()
@@ -343,21 +372,33 @@ notes = notes_sharp
 
 
 progression = create_progression(progression_length, starting_chord)
+progression_semitones =[]
 
 for c in progression:
     chord_note_names, voicing, chord_semitones = numeral_to_chord(c)
     chord_root_note = notes[(root_i+scales[scale][c-1])%12]
     
+
+    chord_semitones_rising = []
+    last_semitone = -1
+    for semitone in chord_semitones:
+        while semitone < last_semitone:
+            semitone += 12
+        last_semitone = semitone
+        chord_semitones_rising.append(semitone)
+    
+    progression_semitones.append(chord_semitones_rising)
+
+
     print("")
     print(chord_root_note + " " + scale + " " + voicing)
     print_chord(chord_semitones)
     print("-".join(chord_note_names))
+    
+    print("")
+    print_chord_tabs(notes, chord_note_names, use_flat)
     print("")
 
-    print_chord_tabs(chord_note_names)
-
     print("")
 
-
-    print("")
-
+chords2midi.write_midi_file(progression_semitones)

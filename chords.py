@@ -3,8 +3,6 @@
 
 import random
 import sys
-import chords2midi
-import play_midi
 
 # Args and defaults
 
@@ -28,7 +26,8 @@ if len(sys.argv) > 4:
 else:
     starting_chord = 1
 
-
+WRITE_MIDI=True
+PLAY_MIDI=False
 RANDOM_VOICING=True
 
 # Definitions
@@ -313,17 +312,7 @@ def print_chord_tabs(notes, chord_note_names, use_flat):
                 if chord_note in tab_notes[string_i]:
                     string_filled[string_i] = True
                     found_pos = True
-
-                    tab_notes_wo_chord_note = []
-                    tab_notes_wo_chord_note.extend(tab_notes[string_i])
-                    tab_notes_wo_chord_note.remove(chord_note)
-                    cleared_string = string
-                    for note_not_played in tab_notes_wo_chord_note:
-                        cleared_string = cleared_string.replace(note_not_played + '-', '---',1)
-                    if len(chord_note) == 1:
-                        cleared_string = cleared_string.replace(chord_note + '-', chord_note + '--',1)
-                        
-                    tab_strings_final[string_i] = cleared_string
+                    tab_strings_final[string_i] = string_with_note(string_i, string, chord_note, tab_notes)
                     break
 
         if not found_pos:
@@ -332,8 +321,14 @@ def print_chord_tabs(notes, chord_note_names, use_flat):
     # Empty strings
     for string_i, string in enumerate(tab_strings_final):
         if string == '':
-            tab_strings_final[string_i] = tab_strings_empty_list[string_i]
-
+            found_pos=False
+            for chord_note_i, chord_note in enumerate(chord_note_names):
+                if chord_note in tab_notes[string_i]:
+                    found_pos=True
+                    tab_strings_final[string_i] = string_with_note(string_i, tab_strings_list[string_i], chord_note, tab_notes)
+                    break
+            if not found_pos:
+                tab_strings_final[string_i] = tab_strings_empty_list[string_i]
 
     # Replace nontes with 'o'
     for string_i, string in enumerate(tab_strings_final):
@@ -349,7 +344,16 @@ def print_chord_tabs(notes, chord_note_names, use_flat):
     tab_strings_final.reverse()
     print('\n'.join(tab_strings_final))
 
-
+def string_with_note(string_i, string, chord_note, tab_notes):
+    tab_notes_wo_chord_note = []
+    tab_notes_wo_chord_note.extend(tab_notes[string_i])
+    tab_notes_wo_chord_note.remove(chord_note)
+    cleared_string = string
+    for note_not_played in tab_notes_wo_chord_note:
+        cleared_string = cleared_string.replace(note_not_played + '-', '---',1)
+    if len(chord_note) == 1:
+        cleared_string = cleared_string.replace(chord_note + '-', chord_note + '--',1)
+    return cleared_string
 
 if root in notes_flat:
     root_i = notes_flat.index(root)
@@ -402,6 +406,13 @@ for c in progression:
 
     print("")
 
-filename = "random_progression.mid"
-chords2midi.write_midi_file(progression_semitones, filename)
-play_midi.play(filename)
+
+if WRITE_MIDI:
+    import chords2midi
+    filename = "random_progression.mid"
+    chords2midi.write_midi_file(progression_semitones, filename)
+
+    if PLAY_MIDI:
+        import play_midi
+        play_midi.play(filename)
+    

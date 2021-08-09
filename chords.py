@@ -3,28 +3,19 @@
 
 import random
 import sys
+import optparse
 
-# Args and defaults
+parser = optparse.OptionParser()
+parser.add_option('-k', '--key', action="store", dest="key", help="Key of thr chord progression", default="C")
+parser.add_option('-s', '--scale', action="store", dest="scale", help="Scale of thr chord progression", default="major")
+parser.add_option('-n', '--num-chords', action="store", dest="num", help="Number of chords in the progression", default="4")
+parser.add_option('-f', '--first', action="store", dest="first", help="Numerical starting chord of the progression", default="1")
 
-if len(sys.argv) > 1:
-    root = sys.argv[1]
-else:
-    root = 'C'
-
-if len(sys.argv) > 2:
-    scale = sys.argv[2]
-else:
-    scale = 'natural_minor'
-
-if len(sys.argv) > 3:
-    progression_length = int(sys.argv[3])
-else:
-    progression_length = 3
-
-if len(sys.argv) > 4:
-    starting_chord = int(sys.argv[4])
-else:
-    starting_chord = 1
+opts, args = parser.parse_args()
+root = opts.key
+scale = opts.scale
+progression_length = int(opts.num)
+starting_chord = int(opts.first)
 
 WRITE_MIDI=True
 PLAY_MIDI=False
@@ -111,7 +102,14 @@ chords_semitones = {
         'min_add11'     : [0, 3, 7, 10, 14, 17]
     }
 
+if root not in notes_sharp or root not in notes_flat:
+    print("Unknown root note:", root)
+    exit()
 
+if scale not in scales:
+    print("Unknown scale:", scale)
+    print("Available scales:\n", scales.keys())
+    exit()
 
 #Respect enharmonic shit
 #notes_corrected = []
@@ -240,12 +238,12 @@ def print_chord_tabs(notes, chord_note_names, use_flat):
 
     tab_strings_empty = \
 '''\
--x--||----|----|----|----|
--x--||----|----|----|----|
--x--||----|----|----|----|
--x--||----|----|----|----|
--x--||----|----|----|----|
--x--||----|----|----|----|\
+-x-||----|----|----|----|
+-x-||----|----|----|----|
+-x-||----|----|----|----|
+-x-||----|----|----|----|
+-x-||----|----|----|----|
+-x-||----|----|----|----|\
 '''
 
     tab_strings_empty_list = tab_strings_empty.split('\n')
@@ -334,9 +332,9 @@ def print_chord_tabs(notes, chord_note_names, use_flat):
     for string_i, string in enumerate(tab_strings_final):
         for note in notes:
             if len(note) == 1:
-                string = string.replace(note + '-', 'o-', 1)    
+                string = string.replace(note + '-', 'o', 1)    
             else:
-                string = string.replace(note, 'o-', 1)    
+                string = string.replace(note, 'o', 1)    
 
         tab_strings_final[string_i] = string
 

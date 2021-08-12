@@ -1,3 +1,4 @@
+```
 usage: progression.py [-h] [-k KEY] [-s SCALE] [-n NUM_CHORDS] [-f FIRST] [-v VOICING] [-m MIDIFILE] [-p] [-l] [-ph]
 
 optional arguments:
@@ -17,3 +18,4 @@ optional arguments:
   -l, --large-hands     Suggest tabs using four bars instead of three. Warning: Only for large hands!
   -ph, --print-horizontal
                         Print the progression horizontally
+```

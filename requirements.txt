@@ -1,0 +1,4 @@
+pygame==2.0.1
+MIDIUtil==1.2.1
+cdifflib==1.2.5
+regex==2021.8.3

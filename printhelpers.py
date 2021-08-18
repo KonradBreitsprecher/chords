@@ -211,7 +211,7 @@ def print_progression(progression, scale, large_hands, horizontal):
                 parts[i].ljust(maxl)
                 for i in range(len(parts))
             ]
-            print('     '.join(padded_strings))
+            print('        '.join(padded_strings))
     else:
         for s in progression_results:
             print(s)

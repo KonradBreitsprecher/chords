@@ -3,33 +3,41 @@
 
 # System imports
 # ====================================================
-
+import os
 import random
 import sys
 import difflib
 import argparse
+from datetime import datetime
 
 # Extention imports
 # ====================================================
 
 import printhelpers
 import midihelpers
-import chorddefinitions as d
+import chorddefinitions as CD
+
+# Constants
+# ====================================================
+VERSION = "1.0"
+REPLAY_INFO = {"version": str, "seed": int, "key": str, "scale": str, "num_chords": int, "first": int, "voicing": str}
+replay_split_operator = '#'
+help_join_operator = ' | '
 
 # Command line arguments
 # ====================================================
 
-help_join_operator = ' | '
 parser = argparse.ArgumentParser()
-parser.add_argument('-k', '--key', help="Key of the chord progression: " + help_join_operator.join(d.note_names_sharp) , default="C")
-parser.add_argument('-s', '--scale', help="Scale of the chord progression: " + help_join_operator.join(list(d.scales.keys())), default="major")
+parser.add_argument('-k', '--key', help="Key of the chord progression: " + help_join_operator.join(CD.note_names_sharp) , default="C")
+parser.add_argument('-s', '--scale', help="Scale of the chord progression: " + help_join_operator.join(list(CD.scales.keys())), default="major")
 parser.add_argument('-n', '--num-chords', help="Number of chords in the progression", default=4)
 parser.add_argument('-f', '--first', help="Numerical starting chord of the progression", default=1)
-parser.add_argument('-v','--voicing', help="Voicing to use: " +  help_join_operator.join(list(d.chord_types.keys())), default="random")
+parser.add_argument('-v','--voicing', help="Voicing to use: " +  help_join_operator.join(list(CD.chord_types.keys())), default="random")
 parser.add_argument('-m','--midifile', help="Specify output midifile", default="random_progression.mid")
-parser.add_argument('-p','--play', action='store_true', help='Play the generated midifile via pygame')
-parser.add_argument('-l','--large-hands', action='store_true', help='Suggest tabs using four bars instead of three. Warning: Only for large hands!')
-parser.add_argument('-ph','--print-horizontal', action='store_true', help='Print the progression horizontally')
+parser.add_argument('-p','--play', action='store_true', help="Play the generated midifile via pygame")
+parser.add_argument('-l','--large-hands', action='store_true', help="Suggest tabs using four bars instead of three. Warning: Only for large hands!")
+parser.add_argument('-ph','--print-horizontal', action='store_true', help="Print the progression horizontally")
+parser.add_argument('-r', '--replay', help="Generate progression from a given replay ID. Other input used for generation is ignored", default="")
 
 args = parser.parse_args()
 
@@ -44,21 +52,30 @@ def args_valid(args) -> bool:
     reason = ""
     valid = True
 
-    if args.key not in d.note_names_sharp and args.key not in d.notes_names_flat:
+    if args.key not in CD.note_names_sharp and args.key not in CD.notes_names_flat:
         reason += "Unknown root note: " + args.key + "\n\n"
         valid = False
 
-    if args.scale not in d.scales:
+    if args.scale not in CD.scales:
         reason += "Unknown scale: " + args.scale + "\n"
-        reason += did_you_mean(args.scale, d.scales)
-        reason += "Available scales:\n" +  help_join_operator.join(list(d.scales.keys())) + "\n\n"
+        reason += did_you_mean(args.scale, CD.scales)
+        reason += "Available scales:\n" +  help_join_operator.join(list(CD.scales.keys())) + "\n\n"
         valid = False
 
-    if args.voicing not in d.chord_types:
+    if args.voicing not in CD.chord_types:
         reason += "Unknown voicing: " + args.voicing + "\n"
-        reason += did_you_mean(args.voicing, d.chord_types)
-        reason += "Available voicings:\n" +  help_join_operator.join(list(d.chord_types.keys())) + "\n\n"
+        reason += did_you_mean(args.voicing, CD.chord_types)
+        reason += "Available voicings:\n" +  help_join_operator.join(list(CD.chord_types.keys())) + "\n\n"
         valid = False
+
+    if args.replay:
+        spl = args.replay.split(replay_split_operator)
+        if not len(spl) == len(REPLAY_INFO):
+            reason += "Corrupt replay ID\n"
+            valid = False
+        if not spl[0] == VERSION:
+            reason += "Wrong version of replay ID\n"
+            valid = False
 
     return valid, reason 
 
@@ -78,10 +95,10 @@ class Chord():
         self.semitones_rising = []
         self.note_names = []
 
-        self.root_note = note_names[(root_i+d.scales[scale][chord_numeral-1])%12]
+        self.root_note = note_names[(root_i + CD.scales[scale][chord_numeral-1])%12]
 
         last_semitone = -1
-        for semitones_in_scale in d.chord_types[voicing]:
+        for semitones_in_scale in CD.chord_types[voicing]:
             semitone = (root_i + scale_semitones[(chord_numeral - 1 + semitones_in_scale) % 7]) % 12
             self.semitones.append(semitone)
             self.note_names.append(note_names[semitone])
@@ -108,14 +125,14 @@ def check_flat():
     for i in range(len(scale_semitones)):
         for j in range(i+1, len(scale_semitones)):
             # print "i, j, notes ", i, j, notes[(root_i + scale_notes[i])%12][0], notes[(root_i + scale_notes[j])%12][0]
-            if d.note_names_sharp[(root_i + scale_semitones[i])%12][0]==d.note_names_sharp[(root_i + scale_semitones[j])%12][0]:
+            if CD.note_names_sharp[(root_i + scale_semitones[i])%12][0] == CD.note_names_sharp[(root_i + scale_semitones[j])%12][0]:
                 return True
 
     return False
 
 def chooce_voicing():
     if args.voicing == "random":
-        return random.choice(list(d.chord_types.keys())[:-1])
+        return random.choice(list(CD.chord_types.keys())[:-1])
     else:
         return args.voicing
 
@@ -125,7 +142,7 @@ def create_random_transitions(scale, length, starting_chord):
     transitions_numeral.append(starting_chord) 
     act_chord = starting_chord
     for i in range(length-1):
-        new_chord_numeral = random.choice(d.chord_transitions[scale][act_chord])
+        new_chord_numeral = random.choice(CD.chord_transitions[scale][act_chord])
         transitions_numeral.append(new_chord_numeral)
         act_chord = new_chord_numeral
     return transitions_numeral
@@ -140,24 +157,64 @@ def create_progression(scale, length, starting_chord):
 
     return progression
 
+
+def decode_replay_ID(replay_ID):
+    spl = replay_ID.split(replay_split_operator)
+    replay_dict = {}
+    i = 0
+    for k, v in REPLAY_INFO.items():
+        replay_dict[k] = v(spl[i])
+        i += 1
+
+    return replay_dict
+
+def encode_replay_ID(seed, args):
+    replay_ID = VERSION + replay_split_operator
+    replay_ID += str(seed) + replay_split_operator
+    for b in list(REPLAY_INFO.keys())[2:]:
+        replay_ID += str(vars(args)[b]) + replay_split_operator
+    return replay_ID[:-1]
+
 # Init
 # ====================================================
 
-# Get root note index
-if args.key in d.notes_names_flat:
-    root_i = d.notes_names_flat.index(args.key)
+# Replay
+
+
+if args.replay:
+    replay_info = decode_replay_ID(args.replay)
+    # Overwrite args
+    seed = replay_info["seed"]
+    args_dict = vars(args)
+    for b in list(REPLAY_INFO.keys())[2:]:
+        args_dict[b] = replay_info[b]
+    
 else:
-    root_i = d.note_names_sharp.index(args.key)
+    # Get fixed seed from OS
+    seed = int.from_bytes(os.urandom(4), 'big') 
+
+random.seed(seed)
+
+# Encode the replay info from seed and command line arguments
+# Reusing the seed will result in same choices for voicing and transition
+replay_ID = encode_replay_ID(seed, args)
+print("ReplayID of progression:", replay_ID)
+
+# Get root note index
+if args.key in CD.notes_names_flat:
+    root_i = CD.notes_names_flat.index(args.key)
+else:
+    root_i = CD.note_names_sharp.index(args.key)
 
 # Get scale notes
-scale_semitones = d.scales[args.scale]
+scale_semitones = CD.scales[args.scale]
 
 #Switch note table if flat
 use_flat = check_flat()
 if use_flat:
-    note_names = d.notes_names_flat
+    note_names = CD.notes_names_flat
 else:
-    note_names = d.note_names_sharp
+    note_names = CD.note_names_sharp
 
 # Generation
 # ====================================================

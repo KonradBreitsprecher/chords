@@ -1,3 +1,29 @@
+`python progression.py -k "F" -s "mixolydian" -ph -p`
+
+Create a random chord progression.\
+Print claviature and tabs.\
+Generate a midifile.\
+Play the midifile.
+
+
+```
+1) F mixolydian sus2              2) D mixolydian add11             3) G mixolydian ninth             4) C mixolydian ninth        
+   F-G-C                             D-F-A-G                           G-Bb-D-F-A                        C-Eb-G-Bb-D
+
+║▒█▒█▒║▒█▒█▒█▒║▒█▒█▒║▒█▒█▒█▒║     ║▒█▒█▒║▒█▒█▒█▒║▒█▒█▒║▒█▒█▒█▒║     ║▒█▒█▒║▒█▒█▒█▒║▒█▒█▒║▒█▒█▒█▒║     ║▒█▒█▒║▒█▒█▒█▒║▒█▒█▒║▒█▒█▒█▒║
+║▒█▒█▒║▒█▒█▒█▒║▒█▒█▒║▒█▒█▒█▒║     ║▒█▒█▒║▒█▒█▒█▒║▒█▒█▒║▒█▒█▒█▒║     ║▒█▒█▒║▒█▒█▒█▒║▒█▒█▒║▒█▒█▒█▒║     ║▒█▒█▒║▒█▒█▒█▒║▒█▒█▒║▒█▒█▒█▒║
+║▒║▒║▒║▒║▒║▒║▒║▒║▒║▒║▒║▒║▒║▒║     ║▒║▒║▒║▒║▒║▒║▒║▒║▒║▒║▒║▒║▒║▒║     ║▒║▒║▒║▒║▒║▒║▒║▒║▒║▒║▒║▒║▒║▒║     ║▒║▒║▒║▒║▒║▒║▒║▒║▒║▒║▒║▒║▒║▒║
+╚═╩═╩═╩═╩═╩═╩═╩═╩═╩═╩═╩═╩═╩═╝     ╚═╩═╩═╩═╩═╩═╩═╩═╩═╩═╩═╩═╩═╩═╝     ╚═╩═╩═╩═╩═╩═╩═╩═╩═╩═╩═╩═╩═╩═╝     ╚═╩═╩═╩═╩═╩═╩═╩═╩═╩═╩═╩═╩═╩═╝
+
+---||-o-|---|---|                 ---||-o-|---|---|                 ---||-o-|---|---|                 ---||---|---|-o-|
+---||-o-|---|---|                 ---||---|---|-o-|                 ---||---|---|-o-|                 ---||---|---|-o-|
+-o-||---|---|---|                 -o-||---|---|---|                 ---||---|-o-|---|                 ---||---|---|-o-|
+---||---|-o-|---|                 -o-||---|---|---|                 -o-||---|---|---|                 ---||-o-|---|---|
+---||---|---|-o-|                 -o-||---|---|---|                 ---||-o-|---|---|                 ---||---|---|-o-|
+---||-o-|---|---|                 ---||-o-|---|---|                 ---||---|---|-o-|                 ---||---|---|-o-|
+```
+
+```
 usage: progression.py [-h] [-k KEY] [-s SCALE] [-n NUM_CHORDS] [-f FIRST] [-v VOICING] [-m MIDIFILE] [-p] [-l] [-ph]
 
 optional arguments:
@@ -17,3 +43,4 @@ optional arguments:
   -l, --large-hands     Suggest tabs using four bars instead of three. Warning: Only for large hands!
   -ph, --print-horizontal
                         Print the progression horizontally
+```

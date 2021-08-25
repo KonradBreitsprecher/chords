@@ -28,8 +28,8 @@ help_join_operator = ' | '
 # ====================================================
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-k', '--key', help="Key of the chord progression: " + help_join_operator.join(CD.note_names_sharp) , default="C")
-parser.add_argument('-s', '--scale', help="Scale of the chord progression: " + help_join_operator.join(list(CD.scales.keys())), default="major")
+parser.add_argument('-k', '--key', help="Key of the chord progression: " + help_join_operator.join(CD.note_names_sharp) , default="random")
+parser.add_argument('-s', '--scale', help="Scale of the chord progression: " + help_join_operator.join(list(CD.scales.keys())), default="random")
 parser.add_argument('-n', '--num-chords', help="Number of chords in the progression", default=4)
 parser.add_argument('-f', '--first', help="Numerical starting chord of the progression", default=1)
 parser.add_argument('-v','--voicing', help="Voicing to use: " +  help_join_operator.join(list(CD.chord_types.keys())), default="random")
@@ -78,6 +78,16 @@ def args_valid(args) -> bool:
             valid = False
 
     return valid, reason 
+
+# Key unspecified -> Random
+if args.key == "random":
+    args.key = random.choice(CD.notes_names_flat)
+# Scale unspecified -> Random
+if args.scale == "random":
+    args.scale = random.choice(list(CD.scales.keys()))
+# To int
+args.num_chords = max(1, int(args.num_chords))
+args.first = max(1, int(args.first))
 
 valid, reason = args_valid(args)
 if not valid:

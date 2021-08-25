@@ -63,7 +63,7 @@ def write_midifile(progression_semitones, filename):
 
     duration_bass = 4
     durations_lead = [1] * (len(progression_semitones) - 1)
-    durations_lead.append(4)
+    durations_lead.append(2)
 
     for i, chord_semitones in enumerate(progression_semitones):
 
